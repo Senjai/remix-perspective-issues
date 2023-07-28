@@ -1,58 +1,30 @@
-# Welcome to Remix!
+This is a wip reproduction of an issue with getting perspective working within remix. This repo attempts to recreate https://codesandbox.io/s/react-elcg7i?file=/src/Perspective.js in Remix.
 
-- [Remix Docs](https://remix.run/docs)
+Related issues: https://github.com/finos/perspective/discussions/2181, https://github.com/finos/perspective/issues/2183. I've looked at the NextJS example as well.
 
-## Development
+This seems challenging since Remix explicitly doesn't want to open up its compiler so far that I can tell, but importing the perspective library without the fully qualified path (e.g. import "@finos/perspective") seems to attempt to load the node-specific code, which errors out on not being able to find the stoppable module. Either adding stoppable as a dependency, setting the build target to neutral, or loading the fully qualified url "@finos/perspective/dist/esm/perspective.js" triggers errors related to using import/export outside of a module.
 
-From your terminal:
+I'm a bit stuck. As a last resort of course we could probably pull these files in via CDN or the like instead of using the bunlder, but that seems off.
 
-```sh
-npm run dev
+To reproduce the errors:
+```shell
+yarn install && yarn dev
 ```
 
-This starts your app in development mode, rebuilding assets on file changes.
+Error using the qualified path:
 
-## Deployment
-
-First, build your app for production:
-
-```sh
-npm run build
+```
+SyntaxError: Cannot use import statement outside a module
+    at internalCompileFunction (node:internal/vm:73:18)
+    at wrapSafe (node:internal/modules/cjs/loader:1195:20)
+    at Module._compile (node:internal/modules/cjs/loader:1239:27)
+    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1329:10)
+    at Module.load (node:internal/modules/cjs/loader:1133:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:972:12)
+    at Module.require (node:internal/modules/cjs/loader:1157:19)
+    at require (node:internal/modules/helpers:119:18)
+    at Object.<anonymous> (/Users/richard/src/remix-perspective/app/components/Perspective.tsx:3:25)
+    at Module._compile (node:internal/modules/cjs/loader:1275:14)
 ```
 
-Then run the app in production mode:
-
-```sh
-npm start
-```
-
-Now you'll need to pick a host to deploy it to.
-
-### DIY
-
-If you're familiar with deploying node applications, the built-in Remix app server is production-ready.
-
-Make sure to deploy the output of `remix build`
-
-- `build/`
-- `public/build/`
-
-### Using a Template
-
-When you ran `npx create-remix@latest` there were a few choices for hosting. You can run that again to create a new project, then copy over relevant code/assets from your current app to the new project that's pre-configured for your target server.
-
-Most importantly, this means everything in the `app/` directory, but if you've further customized your current application outside of there it may also include:
-
-- Any assets you've added/updated in `public/`
-- Any updated versions of root files such as `.eslintrc.js`, etc.
-
-```sh
-cd ..
-# create a new project, and pick a pre-configured host
-npx create-remix@latest
-cd my-new-remix-app
-# remove the new project's app (not the old one!)
-rm -rf app
-# copy your app over
-cp -R ../my-old-remix-app/app app
-```
+Error using the regular import yields the stoppable module not found issue
